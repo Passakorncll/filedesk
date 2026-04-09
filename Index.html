@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ระบบจัดการไฟล์เสีย</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="icon" href="https://banraihospital.moph.go.th/assets/favicon/Moph.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    /* ─── LIGHT & COMPACT THEME ─── */
+    :root {
+      --bg:        #f4f8fb; 
+      --bg2:       #ffffff;
+      --surface:   #ffffff;
+      --surface2:  #f8fafc;
+      --border:    #e2e8f0;
+      --border-hi: #cbd5e1;
+      --accent:    #0284c7; 
+      --accent-soft: #e0f2fe;
+      --amber:     #f59e0b;
+      --emerald:   #10b981;
+      --red:       #ef4444;
+      --text-dark: #0f172a;
+      --text:      #334155;
+      --muted:     #64748b;
+      --label:     #475569;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── ล็อกหน้าจอ 100% ไม่มี Scrollbar ─── */
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Mitr', sans-serif;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px; 
+    }
+
+    /* ─── BACKGROUND PATTERN ─── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(2,132,199,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(2,132,199,0.04) 1px, transparent 1px);
+      background-size: 40px 40px; 
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── LAYOUT 90% x 90% ─── */
+    .shell {
+      position: relative; z-index: 1;
+      width: 90%;       
+      height: 90vh;     
+      max-width: 1400px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ─── TOP BAR ─── */
+    .topbar {
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface);
+      padding: 12px 24px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(2,132,199,0.05);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 44px; height: 44px; 
+      background: var(--accent); border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; color: white;
+      box-shadow: 0 4px 12px rgba(2,132,199,0.2);
+    }
+    .brand-name { font-weight: 600; font-size: 20px; color: var(--text-dark); line-height: 1.1;}
+    .brand-name span { color: var(--accent); }
+    .brand-sub { font-size: 12px; color: var(--muted); }
+    
+    .chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 500;
+      padding: 8px 16px; border-radius: 999px;
+      border: 1px solid var(--border); color: var(--text); background: var(--surface);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .chip:hover { border-color: var(--accent); color: var(--accent); }
+    .chip.admin-active { background: #fef2f2; border-color: #fca5a5; color: var(--red); }
+
+    /* ─── MAIN GRID ─── */
+    .grid-main {
+      flex: 1;
+      min-height: 0; 
+      display: grid;
+      grid-template-columns: 380px 1fr; 
+      gap: 20px; 
+    }
+
+    /* ─── CARD STRUCTURE ─── */
+    .card {
+      background: var(--surface); border: 1px solid rgba(255,255,255,0.8);
+      border-radius: 20px;
+      box-shadow: 0 8px 24px -8px rgba(15,23,42,0.08);
+      display: flex; flex-direction: column;
+      min-height: 0;
+    }
+    .card-header, .panel-header {
+      flex-shrink: 0; padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-title { font-weight: 500; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 10px; }
+    .card-title i {
+      width: 32px; height: 32px; background: var(--accent-soft); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--accent);
+    }
+
+    /* ─── SCROLLABLE AREA ─── */
+    .card-body, .list-wrap {
+      flex: 1; overflow-y: auto; padding: 20px;
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    /* ─── FORM ─── */
+    .field { margin-bottom: 20px; }
+    .field label {
+      display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--text-dark); margin-bottom: 8px;
+    }
+    .step-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: white; font-size: 11px; font-weight: 600;
+    }
+    .inp, .dp-trigger {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;
+      color: var(--text-dark); font-family: 'Mitr', sans-serif; font-size: 14px; padding: 10px 14px; transition: all 0.2s; outline: none;
+    }
+    .inp::placeholder { color: #94a3b8; font-weight: 300; }
+    .inp:focus, .dp-trigger.open, .tp-trigger.open { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    /* ─── CUSTOM DATE PICKER ─── */
+    .dp-trigger { cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+    .dp-trigger-text { color: #94a3b8; }
+    .dp-trigger-text.has-val { color: var(--accent); font-weight: 500; }
+    .dp-popup {
+      position: absolute; z-index: 999; margin-top: 6px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 12px 32px rgba(15,23,42,0.15);
+      width: 320px; padding: 10px; opacity: 0; transform: translateY(-5px); pointer-events: none; transition: all 0.2s;
+    }
+    .dp-popup.show { opacity: 1; transform: translateY(0); pointer-events: all; }
+    .dp-cal-header { display: flex; justify-content: space-between; padding: 8px; align-items: center;}
+    .dp-nav-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s;}
+    .dp-nav-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .dp-month-label { font-weight: 500; font-size: 14px; color: var(--text-dark); display: flex; align-items: center;}
+    .dp-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; padding: 0 4px 4px; }
+    .dp-wd { text-align: center; font-size: 12px; font-weight: 500; color: var(--muted); }
+    .dp-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; padding: 0 4px 8px; }
+    .dp-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 13px; cursor: pointer; color: var(--text-dark); font-weight: 400; transition: all 0.2s;}
+    .dp-day:hover:not(.dp-empty):not(.dp-selected) { background: var(--surface2); border: 1px solid var(--border-hi); }
+    .dp-day.dp-today:not(.dp-selected) { color: var(--accent); font-weight: 600; background: var(--accent-soft); }
+    .dp-day.dp-selected { background: var(--accent); color: white; font-weight: 500; }
+    .dp-day.dp-empty { pointer-events: none; }
+    .dp-divider { height: 1px; background: var(--border); margin: 0 8px; }
+    .dp-footer { padding: 8px; display: flex; gap: 8px; }
+    .dp-btn-clear { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'Mitr', sans-serif; transition: all 0.2s;}
+    .dp-btn-clear:hover { background: #fef2f2; color: var(--red); border-color: #fca5a5; }
+    .dp-btn-confirm { flex: 2; padding: 10px; border-radius: 10px; border: none; background: var(--accent); color: white; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'Mitr', sans-serif; transition: all 0.2s;}
+    .dp-btn-confirm:hover { background: #0369a1; }
+
+    /* ─── CUSTOM TIME PICKER ─── */
+    .tp-trigger { cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+    .tp-trigger-text { color: #94a3b8; }
+    .tp-trigger-text.has-val { color: var(--accent); font-weight: 500; }
+    .tp-popup {
+      position: absolute; z-index: 999; margin-top: 6px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 12px 32px rgba(15,23,42,0.15);
+      width: 240px; padding: 16px; opacity: 0; transform: translateY(-5px); pointer-events: none; transition: all 0.2s;
+    }
+    .tp-popup.show { opacity: 1; transform: translateY(0); pointer-events: all; }
+    .tp-header { text-align: center; font-weight: 500; color: var(--text-dark); margin-bottom: 16px; font-size: 15px; }
+    .tp-time-row { display: flex; align-items: center; justify-content: center; gap: 16px; }
+    .tp-time-spin { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .tp-spin-btn { width: 40px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; }
+    .tp-spin-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .tp-time-val { width: 64px; text-align: center; background: var(--surface); border: 2px solid var(--border); border-radius: 10px; color: var(--accent); font-weight: 600; font-size: 24px; padding: 8px 0; outline: none; font-family: 'Mitr', sans-serif; transition: all 0.2s; }
+    .tp-time-val:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .tp-sep { font-weight: 600; font-size: 24px; color: var(--muted); margin-top: -6px; }
+
+    /* ─── FILE INPUT ─── */
+    .file-zone {
+      width: 100%; border: 2px dashed var(--border-hi); border-radius: 16px;
+      padding: 32px 16px; text-align: center; background: var(--surface2);
+      cursor: pointer; position: relative; transition: all 0.2s;
+    }
+    .file-zone:hover, .file-zone.has-file { border-color: var(--accent); background: var(--accent-soft); }
+    .file-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+    .file-icon { font-size: 28px; color: var(--accent); margin-bottom: 8px; opacity: 0.8;}
+    .file-label { font-size: 13px; color: var(--text); }
+    .file-label strong { color: var(--accent); font-weight: 500;}
+    .file-name-display { display: none; font-size: 12px; color: var(--emerald); margin-top: 8px; font-weight: 500; background: white; padding: 4px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #a7f3d0;}
+
+    /* ─── SUBMIT BUTTON ─── */
+    .btn-submit {
+      width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: 12px;
+      color: white; font-family: 'Mitr', sans-serif; font-weight: 500; font-size: 16px;
+      cursor: pointer; transition: all 0.2s; margin-top: 12px;
+      display: flex; justify-content: center; align-items: center; gap: 8px;
+      box-shadow: 0 4px 12px rgba(2,132,199,0.2);
+    }
+    .btn-submit:hover { background: #0369a1; transform: translateY(-2px); }
+
+    /* ─── RIGHT PANEL ─── */
+    .badge-count { background: var(--accent-soft); color: var(--accent); border-radius: 8px; font-size: 12px; font-weight: 600; padding: 2px 10px; margin-left: 8px;}
+    .btn-refresh {
+      display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500;
+      padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text); cursor: pointer; font-family: 'Mitr', sans-serif; transition: all 0.2s;
+    }
+    .btn-refresh:hover { background: var(--surface2); color: var(--accent); border-color: var(--accent);}
+
+    .tabs {
+      flex-shrink: 0; display: flex; gap: 8px; padding: 12px 20px;
+      border-bottom: 1px solid var(--border); background: var(--surface2);
+    }
+    .tab-btn {
+      font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: 10px; border: 1px solid transparent;
+      background: transparent; color: var(--muted); cursor: pointer; font-family: 'Mitr', sans-serif;
+      display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+    }
+    .tab-btn.active { background: white; color: var(--accent); border-color: var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.02);}
+    .tab-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot-pending { background: var(--amber); }
+    .dot-done    { background: var(--emerald); }
+
+    /* ─── LIST ITEMS ─── */
+    .list-wrap { display: flex; flex-direction: column; gap: 12px; }
+    .item {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 16px; transition: all 0.2s; animation: fadeUp 0.3s ease forwards; opacity: 0; position: relative;
+    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .item:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(2,132,199,0.05); }
+    .item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .item-name { font-weight: 500; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;}
+    
+    .status-pill { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 999px; border: 1px solid; display: flex; align-items: center; gap: 4px; }
+    .status-pending { background: #fef3c7; color: #d97706; border-color: #fde68a; }
+    .status-done { background: #d1fae5; color: #059669; border-color: #a7f3d0; }
+
+    .item-meta {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-dark);
+      margin-bottom: 12px; background: var(--surface2); padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border);
+    }
+    .item-dates { font-size: 12px; color: var(--muted); margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
+    .item-dates .done-date { color: var(--emerald); font-weight: 500;}
+
+    .item-actions { display: flex; gap: 8px; padding-top: 12px; border-top: 1px dashed var(--border); }
+    .btn-action {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-size: 13px; font-weight: 500; padding: 10px; border-radius: 10px; border: 1px solid;
+      text-decoration: none; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-broken { background: #fef2f2; color: var(--red); border-color: #fca5a5; }
+    .btn-broken:hover { background: var(--red); color: white; border-color: var(--red);}
+    .btn-fixed { background: #ecfdf5; color: var(--emerald); border-color: #6ee7b7; }
+    .btn-fixed:hover { background: var(--emerald); color: white; border-color: var(--emerald);}
+    
+    .btn-upload-admin {
+      width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-size: 13px; font-weight: 500; padding: 10px; border-radius: 10px; border: 1px solid #fcd34d;
+      background: #fffbeb; color: #d97706; cursor: pointer; font-family: 'Mitr', sans-serif; transition: all 0.2s;
+    }
+    .btn-upload-admin:hover { background: #f59e0b; color: white; border-color: #f59e0b; }
+
+    /* ─── ปุ่มลบ (Admin) ─── */
+    .btn-delete { 
+      color: var(--red); background: #fef2f2; border: 1px solid #fca5a5; 
+      width: 28px; height: 28px; border-radius: 50%; 
+      display: flex; align-items: center; justify-content: center; 
+      cursor: pointer; transition: all 0.2s; font-size: 12px;
+    }
+    .btn-delete:hover { background: var(--red); color: white; }
+
+    /* ─── UTILS ─── */
+    .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-icon { font-size: 48px; margin-bottom: 16px; color: var(--border-hi); }
+    .loader { text-align: center; padding: 60px; color: var(--muted); font-size: 14px; }
+    .loader i { display: block; font-size: 32px; margin-bottom: 12px; color: var(--accent); }
+
+    /* ─── SWAL OVERRIDES ─── */
+    .swal2-popup { font-family: 'Mitr', sans-serif !important; border-radius: 20px !important; }
+    .swal2-title { font-size: 20px !important; font-weight: 500 !important;}
+    .swal2-input { font-size: 16px !important; padding: 12px !important; border-radius: 10px !important;}
+    .swal2-confirm, .swal2-cancel { font-size: 14px !important; padding: 10px 20px !important; border-radius: 8px !important;}
+  </style>
+</head>
+<body>
+
+<div class="shell">
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="https://banraihospital.moph.go.th/assets/favicon/Moph.svg" alt="Logo" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover;">
+      <div>
+        <div class="brand-name">ระบบแจ้งไฟล์PDFเสีย</span></div>
+        <div class="brand-sub">โรงพยาบาลบ้านไร่</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span id="adminChip" class="chip" onclick="adminLogin()">
+        <i class="fa-solid fa-user-shield"></i> ผู้ดูแลระบบ
+      </span>
+    </div>
+  </header>
+
+  <div class="grid-main">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="fa-solid fa-file-medical"></i> แจ้งปัญหาไฟล์
+        </div>
+      </div>
+      <div class="card-body">
+
+        <div class="field">
+          <label><span class="step-num">1</span> ชื่อผู้แจ้ง <i class="fa-solid fa-asterisk text-red-500" style="font-size: 6px; color: var(--red);"></i></label>
+          <input id="username" type="text" class="inp" placeholder="กรอกชื่อ-นามสกุล">
+        </div>
+
+        <div class="field" style="position:relative">
+          <label><span class="step-num">2</span> วันที่ต้องการใช้ไฟล์ <i class="fa-solid fa-asterisk text-red-500" style="font-size: 6px; color: var(--red);"></i></label>
+          <div class="dp-trigger" id="dpTrigger" onclick="event.stopPropagation(); dpToggle()">
+            <span class="dp-trigger-text" id="dpTriggerText">
+              <i class="fa-regular fa-calendar-days" style="margin-right: 8px;"></i>คลิกเพื่อเลือกวันที่
+            </span>
+            <i class="fa-solid fa-chevron-down dp-trigger-icon" id="dpTriggerIcon"></i>
+          </div>
+          <div class="dp-popup" id="dpPopup" onclick="event.stopPropagation()">
+            <div class="dp-cal-header">
+              <button class="dp-nav-btn" onclick="dpPrevMonth(event)"><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="dp-month-label" id="dpMonthLabel"><i class="fa-regular fa-calendar" style="margin-right: 6px; color: var(--accent);"></i> เดือน ปี</div>
+              <button class="dp-nav-btn" onclick="dpNextMonth(event)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="dp-weekdays">
+              <div class="dp-wd">อา</div><div class="dp-wd">จ</div><div class="dp-wd">อ</div><div class="dp-wd">พ</div><div class="dp-wd">พฤ</div><div class="dp-wd">ศ</div><div class="dp-wd">ส</div>
+            </div>
+            <div class="dp-days" id="dpDays"></div>
+            <div class="dp-divider"></div>
+            <div class="dp-footer">
+              <button class="dp-btn-clear" onclick="dpClear(event)"><i class="fa-solid fa-eraser mr-1"></i> ล้างค่า</button>
+              <button class="dp-btn-confirm" onclick="dpConfirm(event)"><i class="fa-solid fa-check mr-1"></i> ยืนยันวันที่</button>
+            </div>
+          </div>
+          <input type="hidden" id="dateNeeded">
+        </div>
+
+        <div class="field" style="position:relative">
+          <label><span class="step-num">3</span> เวลาที่ต้องการใช้ไฟล์ <i class="fa-solid fa-asterisk text-red-500" style="font-size: 6px; color: var(--red);"></i></label>
+          <div class="dp-trigger tp-trigger" id="tpTrigger" onclick="event.stopPropagation(); tpToggle()">
+            <span class="dp-trigger-text tp-trigger-text has-val" id="tpTriggerText">
+              <i class="fa-regular fa-clock" style="margin-right: 8px;"></i>08:00
+            </span>
+            <i class="fa-solid fa-chevron-down dp-trigger-icon" id="tpTriggerIcon"></i>
+          </div>
+          <div class="tp-popup" id="tpPopup" onclick="event.stopPropagation()">
+            <div class="tp-header"><i class="fa-regular fa-clock" style="color:var(--accent);"></i> ระบุเวลา</div>
+            <div class="tp-time-row">
+              <div class="tp-time-spin">
+                <button class="tp-spin-btn" onclick="tpSpinHour(1,event)"><i class="fa-solid fa-chevron-up"></i></button>
+                <input class="tp-time-val" id="tpHour" type="text" value="08" maxlength="2" oninput="tpClampHour(this)">
+                <button class="tp-spin-btn" onclick="tpSpinHour(-1,event)"><i class="fa-solid fa-chevron-down"></i></button>
+              </div>
+              <div class="tp-sep">:</div>
+              <div class="tp-time-spin">
+                <button class="tp-spin-btn" onclick="tpSpinMin(1,event)"><i class="fa-solid fa-chevron-up"></i></button>
+                <input class="tp-time-val" id="tpMin" type="text" value="00" maxlength="2" oninput="tpClampMin(this)">
+                <button class="tp-spin-btn" onclick="tpSpinMin(-1,event)"><i class="fa-solid fa-chevron-down"></i></button>
+              </div>
+            </div>
+            <div class="dp-divider" style="margin: 16px 0 8px;"></div>
+            <div class="dp-footer" style="padding:0;">
+              <button class="dp-btn-confirm" style="width:100%;" onclick="tpConfirm(event)"><i class="fa-solid fa-check mr-1"></i> ยืนยันเวลา</button>
+            </div>
+          </div>
+          <input type="hidden" id="timeNeeded" value="08:00">
+        </div>
+
+        <div class="field">
+          <label><span class="step-num">4</span> แนบไฟล์ <i class="fa-solid fa-asterisk text-red-500" style="font-size: 6px; color: var(--red);"></i></label>
+          <div class="file-zone" id="fileZone">
+            <input type="file" id="fileInput" onchange="onFileChange(this)">
+            <div class="file-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+            <div class="file-label"><strong>คลิกเพื่อเลือกไฟล์</strong> หรือลากไฟล์มาวาง</div>
+            <div id="fileNameDisplay" class="file-name-display" style="display: none;">
+              <i class="fa-solid fa-file-circle-check"></i> <span id="fileNameText"></span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-submit" onclick="submitUser()">
+          <i class="fa-solid fa-paper-plane"></i> ส่งรายงานให้ทีม IT
+        </button>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="panel-header">
+        <div style="display:flex;align-items:center;">
+          <div class="card-title"><i class="fa-solid fa-folder-tree"></i> ประวัติรายการ</div>
+          <span class="badge-count" id="countBadge">0</span>
+        </div>
+        <button class="btn-refresh" onclick="loadList()"><i class="fa-solid fa-rotate-right"></i> รีเฟรช</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" id="tabAll" onclick="filterList('all')">ทั้งหมด</button>
+        <button class="tab-btn" id="tabPending" onclick="filterList('pending')"><span class="tab-dot dot-pending"></span> รอดำเนินการ</button>
+        <button class="tab-btn" id="tabDone" onclick="filterList('done')"><span class="tab-dot dot-done"></span> แก้ไขแล้ว</button>
+      </div>
+
+      <div class="list-wrap" id="list">
+        <div class="loader"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลดข้อมูล...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let isAdmin = false;
+  let allData = [];
+  let currentFilter = 'all';
+
+  // 🚨 สำคัญมาก: เอา URL เว็บแอปที่เพิ่ง Deploy มาวางตรงนี้!!
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzweU6mkruGDNXzXtCt4YzU0clV0CUtXcLUvkZMveCF_7nLPMuiuZ2Tf6aeBzk84SME/exec";
+
+  // ฟังก์ชันกลางสำหรับคุยกับ Google Apps Script
+  async function apiCall(action, payload = {}) {
+    try {
+      const response = await fetch(GAS_API_URL, {
+        method: 'POST',
+        // ต้องใช้ text/plain เพื่อป้องกันปัญหา CORS Error ของเบราว์เซอร์
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: action, payload: payload })
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  }
+
+  /* ── FILE CHANGE ── */
+  function onFileChange(el) {
+    const f = el.files[0];
+    const zone = document.getElementById('fileZone');
+    const nameDisplay = document.getElementById('fileNameDisplay');
+    const nameText = document.getElementById('fileNameText');
+    if (f) {
+      zone.classList.add('has-file');
+      nameDisplay.style.display = 'inline-flex';
+      nameText.textContent = f.name;
+    } else {
+      zone.classList.remove('has-file');
+      nameDisplay.style.display = 'none';
+    }
+  }
+
+  /* ── ADMIN ── */
+  function adminLogin() {
+    Swal.fire({
+      title: 'IT Admin Login',
+      input: 'password',
+      inputPlaceholder: 'รหัสผ่านแอดมิน...',
+      confirmButtonText: 'เข้าสู่ระบบ',
+      cancelButtonText: 'ยกเลิก',
+      showCancelButton: true,
+    }).then(res => {
+      if (res.value === '1234') {
+        isAdmin = true; updateAdminUI(); loadList();
+        Swal.fire({ icon: 'success', title: 'เปิดโหมดแอดมิน', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+      } else if (res.value) {
+        Swal.fire({ icon: 'error', title: 'รหัสผ่านผิด' });
+      }
+    });
+  }
+
+  function exitAdmin() { isAdmin = false; updateAdminUI(); drawItems(allData); }
+
+  function updateAdminUI() {
+    const chip = document.getElementById('adminChip');
+    if (isAdmin) {
+      chip.className = 'chip admin-active';
+      chip.innerHTML = '<i class="fa-solid fa-user-gear"></i> โหมดแอดมิน <i class="fa-solid fa-circle-xmark" style="margin-left:6px;" onclick="exitAdmin();event.stopPropagation()"></i>';
+      chip.onclick = null;
+    } else {
+      chip.className = 'chip';
+      chip.innerHTML = '<i class="fa-solid fa-user-shield"></i> ผู้ดูแลระบบ';
+      chip.onclick = adminLogin;
+    }
+  }
+
+  /* ── FILTER / TABS ── */
+  function filterList(type) {
+    currentFilter = type;
+    ['tabAll','tabPending','tabDone'].forEach(id => document.getElementById(id).classList.remove('active'));
+    document.getElementById(type === 'all' ? 'tabAll' : type === 'pending' ? 'tabPending' : 'tabDone').classList.add('active');
+    renderFiltered();
+  }
+
+  function renderFiltered() {
+    let data = allData;
+    if (currentFilter === 'pending') data = allData.filter(i => !i.status.includes('แก้ไขแล้ว'));
+    if (currentFilter === 'done')    data = allData.filter(i => i.status.includes('แก้ไขแล้ว'));
+    drawItems(data);
+  }
+
+  /* ── LOAD ── */
+  async function loadList() {
+    document.getElementById('list').innerHTML = '<div class="loader"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
+    try {
+      // เรียกใช้ API แบบใหม่
+      const data = await apiCall('getReportList');
+      allData = data;
+      document.getElementById('countBadge').textContent = data.length;
+      renderFiltered();
+    } catch(e) {
+      document.getElementById('list').innerHTML = '<div class="loader" style="color:red;"><i class="fa-solid fa-triangle-exclamation"></i>เชื่อมต่อฐานข้อมูลล้มเหลว</div>';
+    }
+  }
+
+  /* ── DRAW ── */
+  function drawItems(data) {
+    const container = document.getElementById('list');
+    container.innerHTML = '';
+
+    if (!data || data.length === 0) {
+      container.innerHTML = `<div class="empty"><div class="empty-icon"><i class="fa-solid fa-box-open"></i></div><div class="empty-text">ไม่มีข้อมูลประวัติ</div></div>`;
+      return;
+    }
+
+    data.forEach((item, idx) => {
+      const isDone = item.status.includes('แก้ไขแล้ว');
+      let datesHTML = `<div><i class="fa-solid fa-cloud-arrow-up"></i> แจ้งเมื่อ: ${item.dateUploaded || '-'}</div>`;
+      if (isDone) datesHTML += `<div class="done-date"><i class="fa-solid fa-circle-check"></i> แก้ไขเสร็จ: ${item.dateFixed || '-'}</div>`;
+
+      let actionBtns = `<a href="${item.brokenUrl}" target="_blank" class="btn-action btn-broken"><i class="fa-solid fa-file-circle-exclamation"></i> ไฟล์ต้นฉบับ</a>`;
+      if (isDone && item.fixedUrl !== '-') {
+        actionBtns += `<a href="${item.fixedUrl}" target="_blank" class="btn-action btn-fixed"><i class="fa-solid fa-file-circle-check"></i> ไฟล์แก้แล้ว</a>`;
+      }
+
+      let adminBtn = (!isDone && isAdmin)
+        ? `<button class="btn-upload-admin" onclick="adminUpload(${item.row})"><i class="fa-solid fa-upload"></i> อัปโหลดส่งคืน</button>` : '';
+
+      let deleteBtn = isAdmin ? `<div class="btn-delete" onclick="adminDelete(${item.row})" title="ลบรายการนี้"><i class="fa-solid fa-trash-can"></i></div>` : '';
+
+      const el = document.createElement('div');
+      el.className = 'item';
+      el.style.animationDelay = `${idx * 0.05}s`;
+      el.innerHTML = `
+        <div class="item-top">
+          <div>
+            <div class="item-name"><i class="fa-solid fa-user" style="color:var(--accent);"></i> ${item.name}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="status-pill ${isDone ? 'status-done' : 'status-pending'}">
+              ${isDone ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-hourglass-half"></i>'} ${item.status}
+            </span>
+            ${deleteBtn}
+          </div>
+        </div>
+        <div class="item-meta">
+          <i class="fa-regular fa-calendar-check" style="color:var(--accent);"></i>
+          ต้องใช้: <strong>${item.dateNeeded} เวลา ${item.timeNeeded} น.</strong>
+        </div>
+        <div class="item-dates">${datesHTML}</div>
+        <div class="item-actions">${actionBtns}</div>
+        ${adminBtn}
+      `;
+      container.appendChild(el);
+    });
+  }
+
+  /* ── ADMIN DELETE ── */
+  function adminDelete(row) {
+    Swal.fire({
+      title: 'ยืนยันการลบ?',
+      text: "ลบแล้วจะไม่สามารถกู้คืนได้นะครับ",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'ลบรายการ',
+      cancelButtonText: 'ยกเลิก'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+        try {
+          await apiCall('deleteItem', row);
+          Swal.fire('สำเร็จ!', 'ลบรายการเรียบร้อย', 'success');
+          loadList();
+        } catch(e) { Swal.fire('ผิดพลาด', 'ลบไม่สำเร็จ', 'error'); }
+      }
+    });
+  }
+
+  /* ── ADMIN UPLOAD ── */
+  async function adminUpload(row) {
+    const { value: file } = await Swal.fire({
+      title: 'อัปโหลดไฟล์คืน', input: 'file', confirmButtonText: 'อัปโหลด', cancelButtonText: 'ยกเลิก', showCancelButton: true
+    });
+    if (file) {
+      Swal.fire({ title: 'กำลังอัปโหลด...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const payload = { row: row, fileName: file.name, mimeType: file.type, base64: e.target.result.split(',')[1] };
+          await apiCall('uploadFixedFile', payload);
+          Swal.fire({ icon: 'success', title: 'เรียบร้อย', timer: 1500, showConfirmButton: false });
+          loadList();
+        } catch(e) { Swal.fire('ผิดพลาด', 'อัปโหลดไม่สำเร็จ', 'error'); }
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  /* ── USER SUBMIT ── */
+  function submitUser() {
+    const u = document.getElementById('username').value.trim();
+    const d = document.getElementById('dateNeeded').value;
+    const t = document.getElementById('timeNeeded').value;
+    const f = document.getElementById('fileInput').files[0];
+
+    if (!u || !d || !t || !f) {
+      Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกให้ครบทุกช่องครับ' });
+      return;
+    }
+
+    Swal.fire({ title: 'กำลังส่งข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const payload = { username: u, dateNeeded: d, timeNeeded: t, fileName: f.name, mimeType: f.type, base64: e.target.result.split(',')[1] };
+        await apiCall('uploadBrokenFile', payload);
+        Swal.fire({ icon: 'success', title: 'ส่งรายงานสำเร็จ', text: 'รอทีม IT ตรวจสอบครับ' });
+        
+        document.getElementById('username').value = '';
+        document.getElementById('dateNeeded').value = '';
+        document.getElementById('timeNeeded').value = '08:00';
+        dpClear({stopPropagation:()=>{}});
+        document.getElementById('fileInput').value = '';
+        onFileChange({ files: [] });
+        loadList();
+      } catch(e) { Swal.fire('ผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ', 'error'); }
+    };
+    reader.readAsDataURL(f);
+  }
+
+  /* ══ DATE PICKER LOGIC ══ */
+  // ส่วนปฏิทินใช้โค้ดเดิมเป๊ะครับ...
+  const MONTHS_TH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  let dpOpen = false; let dpYear, dpMonth, dpSelectedDate = null;
+  function dpInit() { const now = new Date(); dpYear = now.getFullYear(); dpMonth = now.getMonth(); dpRenderCal(); }
+  function dpRenderCal() {
+    document.getElementById('dpMonthLabel').innerHTML = `<i class="fa-regular fa-calendar" style="margin-right: 6px; color: var(--accent);"></i> ${MONTHS_TH[dpMonth]} ${dpYear + 543}`;
+    const firstDay = new Date(dpYear, dpMonth, 1).getDay(); const daysInMonth = new Date(dpYear, dpMonth + 1, 0).getDate();
+    const today = new Date(); const grid = document.getElementById('dpDays'); grid.innerHTML = '';
+    for (let i = 0; i < firstDay; i++) { const el = document.createElement('div'); el.className = 'dp-day dp-empty'; grid.appendChild(el); }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const el = document.createElement('div'); el.className = 'dp-day'; el.textContent = d;
+      if (d === today.getDate() && dpMonth === today.getMonth() && dpYear === today.getFullYear()) el.classList.add('dp-today');
+      if (dpSelectedDate && d === dpSelectedDate.getDate() && dpMonth === dpSelectedDate.getMonth() && dpYear === dpSelectedDate.getFullYear()) el.classList.add('dp-selected');
+      el.onclick = function(e) { e.stopPropagation(); dpSelectDay(d); }; grid.appendChild(el);
+    }
+  }
+  function dpSelectDay(d) { dpSelectedDate = new Date(dpYear, dpMonth, d); dpRenderCal(); }
+  function dpToggle() { dpOpen = !dpOpen; document.getElementById('dpPopup').classList.toggle('show', dpOpen); document.getElementById('dpTrigger').classList.toggle('open', dpOpen); if(dpOpen) { tpClose(); dpRenderCal(); } }
+  function dpClose() { dpOpen = false; document.getElementById('dpPopup').classList.remove('show'); document.getElementById('dpTrigger').classList.remove('open'); }
+  function dpPrevMonth(e) { e.stopPropagation(); dpMonth--; if(dpMonth<0){dpMonth=11; dpYear--;} dpRenderCal(); }
+  function dpNextMonth(e) { e.stopPropagation(); dpMonth++; if(dpMonth>11){dpMonth=0; dpYear++;} dpRenderCal(); }
+  function dpConfirm(e) {
+    e.stopPropagation();
+    if (!dpSelectedDate) return Swal.fire({ icon:'warning', title:'เตือน', text:'เลือกวันที่ก่อนครับ' });
+    const d = dpSelectedDate; const dayStr = String(d.getDate()).padStart(2, '0');
+    document.getElementById('dateNeeded').value = dayStr + ' ' + MONTHS_TH[d.getMonth()] + ' ' + (d.getFullYear()+543);
+    const txt = document.getElementById('dpTriggerText');
+    txt.innerHTML = `<i class="fa-solid fa-calendar-check" style="margin-right:8px;"></i> ${document.getElementById('dateNeeded').value}`;
+    txt.classList.add('has-val'); dpClose();
+  }
+  function dpClear(e) {
+    e.stopPropagation(); dpSelectedDate = null; document.getElementById('dateNeeded').value = '';
+    const txt = document.getElementById('dpTriggerText');
+    txt.innerHTML = '<i class="fa-regular fa-calendar-days" style="margin-right:8px;"></i>คลิกเพื่อเลือกวันที่'; 
+    txt.classList.remove('has-val'); dpRenderCal(); dpClose();
+  }
+
+  /* ══ TIME PICKER LOGIC ══ */
+  let tpOpen = false;
+  function tpToggle() { tpOpen = !tpOpen; document.getElementById('tpPopup').classList.toggle('show', tpOpen); document.getElementById('tpTrigger').classList.toggle('open', tpOpen); if(tpOpen) dpClose(); }
+  function tpClose() { tpOpen = false; document.getElementById('tpPopup').classList.remove('show'); document.getElementById('tpTrigger').classList.remove('open'); }
+  function padStr(n) { return String(n).padStart(2, '0'); }
+  function tpSpinHour(dir, e) { e.stopPropagation(); let v=(parseInt(document.getElementById('tpHour').value)||0)+dir; if(v<0)v=23; if(v>23)v=0; document.getElementById('tpHour').value=padStr(v); }
+  function tpSpinMin(dir, e) { e.stopPropagation(); let v=(parseInt(document.getElementById('tpMin').value)||0)+dir; if(v<0)v=59; if(v>59)v=0; document.getElementById('tpMin').value=padStr(v); }
+  function tpClampHour(el) { let v=parseInt(el.value); if(!isNaN(v)){if(v>23)el.value='23';if(v<0)el.value='00';} }
+  function tpClampMin(el) { let v=parseInt(el.value); if(!isNaN(v)){if(v>59)el.value='59';if(v<0)el.value='00';} }
+  function tpConfirm(e) {
+    e.stopPropagation();
+    const h = padStr(document.getElementById('tpHour').value||0); const m = padStr(document.getElementById('tpMin').value||0);
+    const timeStr = `${h}:${m}`;
+    document.getElementById('timeNeeded').value = timeStr;
+    const txt = document.getElementById('tpTriggerText');
+    txt.innerHTML = `<i class="fa-solid fa-clock" style="margin-right:8px;"></i> ${timeStr}`;
+    tpClose();
+  }
+
+  document.addEventListener('click', function(e) { if (dpOpen) dpClose(); if (tpOpen) tpClose(); });
+  window.onload = function() { dpInit(); loadList(); };
+</script>
+</body>
+</html>
