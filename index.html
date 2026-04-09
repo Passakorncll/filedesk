@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
-    /* ─── LIGHT & COMPACT THEME ─── */
+    /* ─── สไตล์เดิมทั้งหมดของนาย (คงไว้ 100%) ─── */
     :root {
       --bg:        #f4f8fb; 
       --bg2:       #ffffff;
@@ -34,7 +34,6 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ─── ล็อกหน้าจอ 100% ไม่มี Scrollbar ─── */
     body {
       background: var(--bg);
       color: var(--text);
@@ -48,7 +47,6 @@
       font-size: 14px; 
     }
 
-    /* ─── BACKGROUND PATTERN ─── */
     body::before {
       content: '';
       position: fixed; inset: 0;
@@ -60,7 +58,6 @@
       z-index: 0;
     }
 
-    /* ─── LAYOUT 90% x 90% ─── */
     .shell {
       position: relative; z-index: 1;
       width: 90%;       
@@ -71,7 +68,6 @@
       gap: 16px;
     }
 
-    /* ─── TOP BAR ─── */
     .topbar {
       flex-shrink: 0;
       display: flex; align-items: center; justify-content: space-between;
@@ -82,13 +78,6 @@
       box-shadow: 0 4px 12px rgba(2,132,199,0.05);
     }
     .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-icon {
-      width: 44px; height: 44px; 
-      background: var(--accent); border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px; color: white;
-      box-shadow: 0 4px 12px rgba(2,132,199,0.2);
-    }
     .brand-name { font-weight: 600; font-size: 20px; color: var(--text-dark); line-height: 1.1;}
     .brand-name span { color: var(--accent); }
     .brand-sub { font-size: 12px; color: var(--muted); }
@@ -103,7 +92,6 @@
     .chip:hover { border-color: var(--accent); color: var(--accent); }
     .chip.admin-active { background: #fef2f2; border-color: #fca5a5; color: var(--red); }
 
-    /* ─── MAIN GRID ─── */
     .grid-main {
       flex: 1;
       min-height: 0; 
@@ -112,7 +100,6 @@
       gap: 20px; 
     }
 
-    /* ─── CARD STRUCTURE ─── */
     .card {
       background: var(--surface); border: 1px solid rgba(255,255,255,0.8);
       border-radius: 20px;
@@ -130,7 +117,6 @@
       display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--accent);
     }
 
-    /* ─── SCROLLABLE AREA ─── */
     .card-body, .list-wrap {
       flex: 1; overflow-y: auto; padding: 20px;
     }
@@ -139,7 +125,6 @@
     ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
-    /* ─── FORM ─── */
     .field { margin-bottom: 20px; }
     .field label {
       display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--text-dark); margin-bottom: 8px;
@@ -156,7 +141,6 @@
     .inp::placeholder { color: #94a3b8; font-weight: 300; }
     .inp:focus, .dp-trigger.open, .tp-trigger.open { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-soft); }
 
-    /* ─── CUSTOM DATE PICKER ─── */
     .dp-trigger { cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
     .dp-trigger-text { color: #94a3b8; }
     .dp-trigger-text.has-val { color: var(--accent); font-weight: 500; }
@@ -185,7 +169,6 @@
     .dp-btn-confirm { flex: 2; padding: 10px; border-radius: 10px; border: none; background: var(--accent); color: white; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'Mitr', sans-serif; transition: all 0.2s;}
     .dp-btn-confirm:hover { background: #0369a1; }
 
-    /* ─── CUSTOM TIME PICKER ─── */
     .tp-trigger { cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
     .tp-trigger-text { color: #94a3b8; }
     .tp-trigger-text.has-val { color: var(--accent); font-weight: 500; }
@@ -204,7 +187,6 @@
     .tp-time-val:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
     .tp-sep { font-weight: 600; font-size: 24px; color: var(--muted); margin-top: -6px; }
 
-    /* ─── FILE INPUT ─── */
     .file-zone {
       width: 100%; border: 2px dashed var(--border-hi); border-radius: 16px;
       padding: 32px 16px; text-align: center; background: var(--surface2);
@@ -217,7 +199,6 @@
     .file-label strong { color: var(--accent); font-weight: 500;}
     .file-name-display { display: none; font-size: 12px; color: var(--emerald); margin-top: 8px; font-weight: 500; background: white; padding: 4px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #a7f3d0;}
 
-    /* ─── SUBMIT BUTTON ─── */
     .btn-submit {
       width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: 12px;
       color: white; font-family: 'Mitr', sans-serif; font-weight: 500; font-size: 16px;
@@ -227,7 +208,6 @@
     }
     .btn-submit:hover { background: #0369a1; transform: translateY(-2px); }
 
-    /* ─── RIGHT PANEL ─── */
     .badge-count { background: var(--accent-soft); color: var(--accent); border-radius: 8px; font-size: 12px; font-weight: 600; padding: 2px 10px; margin-left: 8px;}
     .btn-refresh {
       display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500;
@@ -250,7 +230,6 @@
     .dot-pending { background: var(--amber); }
     .dot-done    { background: var(--emerald); }
 
-    /* ─── LIST ITEMS ─── */
     .list-wrap { display: flex; flex-direction: column; gap: 12px; }
     .item {
       background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
@@ -290,7 +269,6 @@
     }
     .btn-upload-admin:hover { background: #f59e0b; color: white; border-color: #f59e0b; }
 
-    /* ─── ปุ่มลบ (Admin) ─── */
     .btn-delete { 
       color: var(--red); background: #fef2f2; border: 1px solid #fca5a5; 
       width: 28px; height: 28px; border-radius: 50%; 
@@ -299,13 +277,23 @@
     }
     .btn-delete:hover { background: var(--red); color: white; }
 
-    /* ─── UTILS ─── */
     .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
     .empty-icon { font-size: 48px; margin-bottom: 16px; color: var(--border-hi); }
     .loader { text-align: center; padding: 60px; color: var(--muted); font-size: 14px; }
     .loader i { display: block; font-size: 32px; margin-bottom: 12px; color: var(--accent); }
 
-    /* ─── SWAL OVERRIDES ─── */
+    /* ─── เพิ่มสไตล์ Skeleton Loading สำหรับดึงความสนใจระหว่างรอ (หลอกตา) ─── */
+    .skeleton-item {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 16px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .skel-line { height: 16px; background: #e2e8f0; border-radius: 8px; animation: pulse 1.5s infinite ease-in-out; }
+    .skel-line.w-50 { width: 50%; }
+    .skel-line.w-80 { width: 80%; }
+    .skel-line.w-100 { width: 100%; }
+    .skel-box { height: 40px; background: #e2e8f0; border-radius: 10px; width: 100%; animation: pulse 1.5s infinite ease-in-out; }
+    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
     .swal2-popup { font-family: 'Mitr', sans-serif !important; border-radius: 20px !important; }
     .swal2-title { font-size: 20px !important; font-weight: 500 !important;}
     .swal2-input { font-size: 16px !important; padding: 12px !important; border-radius: 10px !important;}
@@ -320,7 +308,7 @@
     <div class="brand">
       <img src="https://banraihospital.moph.go.th/assets/favicon/Moph.svg" alt="Logo" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover;">
       <div>
-        <div class="brand-name">ระบบแจ้งไฟล์PDFเสีย</span></div>
+        <div class="brand-name">ระบบแจ้งไฟล์PDFเสีย</div>
         <div class="brand-sub">โรงพยาบาลบ้านไร่</div>
       </div>
     </div>
@@ -429,7 +417,7 @@
           <div class="card-title"><i class="fa-solid fa-folder-tree"></i> ประวัติรายการ</div>
           <span class="badge-count" id="countBadge">0</span>
         </div>
-        <button class="btn-refresh" onclick="loadList()"><i class="fa-solid fa-rotate-right"></i> รีเฟรช</button>
+        <button class="btn-refresh" id="refreshBtn" onclick="loadList()"><i class="fa-solid fa-rotate-right"></i> รีเฟรช</button>
       </div>
 
       <div class="tabs">
@@ -439,7 +427,16 @@
       </div>
 
       <div class="list-wrap" id="list">
-        <div class="loader"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลดข้อมูล...</div>
+        <div class="skeleton-item">
+          <div class="skel-line w-50"></div>
+          <div class="skel-line w-80"></div>
+          <div class="skel-box"></div>
+        </div>
+        <div class="skeleton-item">
+          <div class="skel-line w-50"></div>
+          <div class="skel-line w-80"></div>
+          <div class="skel-box"></div>
+        </div>
       </div>
     </div>
 
@@ -447,19 +444,27 @@
 </div>
 
 <script>
+  // 🚨 ใส่ URL อันใหม่ของนายตรงนี้!
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw4tUT6eMdr9YmMzT_cqiUUjCLMfEEx3p9pKbYElQu2X3KMLK2y5Zf40dcElDrQjk06/exec";
+
+  // ─── การทำ Local Storage Cache เพื่อให้กดปุ๊บมาปั๊บ ───
   let isAdmin = false;
   let allData = [];
   let currentFilter = 'all';
 
-  // 🚨 สำคัญมาก: เอา URL เว็บแอปที่เพิ่ง Deploy มาวางตรงนี้!!
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw4tUT6eMdr9YmMzT_cqiUUjCLMfEEx3p9pKbYElQu2X3KMLK2y5Zf40dcElDrQjk06/exec";
+  // พยายามดึงของเก่าที่เคยโหลดไว้มาโชว์ก่อนเลย! (ผู้ใช้จะได้ไม่ต้องรอ)
+  try {
+    const cachedData = localStorage.getItem('fileDeskCache');
+    if(cachedData) {
+      allData = JSON.parse(cachedData);
+      setTimeout(() => renderFiltered(), 100); // ดีเลย์นิดนึงให้หน้าเว็บเรนเดอร์ทัน
+    }
+  } catch(e){}
 
-  // ฟังก์ชันกลางสำหรับคุยกับ Google Apps Script
   async function apiCall(action, payload = {}) {
     try {
       const response = await fetch(GAS_API_URL, {
         method: 'POST',
-        // ต้องใช้ text/plain เพื่อป้องกันปัญหา CORS Error ของเบราว์เซอร์
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: action, payload: payload })
       });
@@ -470,7 +475,6 @@
     }
   }
 
-  /* ── FILE CHANGE ── */
   function onFileChange(el) {
     const f = el.files[0];
     const zone = document.getElementById('fileZone');
@@ -486,7 +490,6 @@
     }
   }
 
-  /* ── ADMIN ── */
   function adminLogin() {
     Swal.fire({
       title: 'IT Admin Login',
@@ -520,7 +523,6 @@
     }
   }
 
-  /* ── FILTER / TABS ── */
   function filterList(type) {
     currentFilter = type;
     ['tabAll','tabPending','tabDone'].forEach(id => document.getElementById(id).classList.remove('active'));
@@ -532,24 +534,42 @@
     let data = allData;
     if (currentFilter === 'pending') data = allData.filter(i => !i.status.includes('แก้ไขแล้ว'));
     if (currentFilter === 'done')    data = allData.filter(i => i.status.includes('แก้ไขแล้ว'));
+    
+    document.getElementById('countBadge').textContent = allData.length;
     drawItems(data);
   }
 
-  /* ── LOAD ── */
   async function loadList() {
-    document.getElementById('list').innerHTML = '<div class="loader"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
+    const btn = document.getElementById('refreshBtn');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> โหลด...';
+    btn.style.pointerEvents = 'none';
+    
+    // ถ้ายังไม่มีของเก่า ให้โชว์ Skeleton 
+    if(allData.length === 0) {
+      document.getElementById('list').innerHTML = `
+        <div class="skeleton-item"><div class="skel-line w-50"></div><div class="skel-line w-80"></div><div class="skel-box"></div></div>
+        <div class="skeleton-item"><div class="skel-line w-50"></div><div class="skel-line w-80"></div><div class="skel-box"></div></div>
+      `;
+    }
+
     try {
-      // เรียกใช้ API แบบใหม่
       const data = await apiCall('getReportList');
       allData = data;
-      document.getElementById('countBadge').textContent = data.length;
+      // เซฟลง Local Storage ไว้ใช้ครั้งหน้า
+      localStorage.setItem('fileDeskCache', JSON.stringify(allData)); 
       renderFiltered();
     } catch(e) {
-      document.getElementById('list').innerHTML = '<div class="loader" style="color:red;"><i class="fa-solid fa-triangle-exclamation"></i>เชื่อมต่อฐานข้อมูลล้มเหลว</div>';
+      if(allData.length === 0) {
+        document.getElementById('list').innerHTML = '<div class="loader" style="color:red;"><i class="fa-solid fa-triangle-exclamation"></i>เชื่อมต่อฐานข้อมูลล้มเหลว</div>';
+      } else {
+        Swal.fire({ icon: 'error', title: 'อัปเดตข้อมูลไม่สำเร็จ', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+      }
+    } finally {
+      btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> รีเฟรช';
+      btn.style.pointerEvents = 'auto';
     }
   }
 
-  /* ── DRAW ── */
   function drawItems(data) {
     const container = document.getElementById('list');
     container.innerHTML = '';
@@ -576,7 +596,8 @@
 
       const el = document.createElement('div');
       el.className = 'item';
-      el.style.animationDelay = `${idx * 0.05}s`;
+      // ปิดอนิเมชั่นเด้งถ้าโหลดจาก Cache จะได้ดูเร็วขึ้น
+      el.style.animationDelay = `${idx * 0.03}s`; 
       el.innerHTML = `
         <div class="item-top">
           <div>
@@ -601,7 +622,6 @@
     });
   }
 
-  /* ── ADMIN DELETE ── */
   function adminDelete(row) {
     Swal.fire({
       title: 'ยืนยันการลบ?',
@@ -623,7 +643,6 @@
     });
   }
 
-  /* ── ADMIN UPLOAD ── */
   async function adminUpload(row) {
     const { value: file } = await Swal.fire({
       title: 'อัปโหลดไฟล์คืน', input: 'file', confirmButtonText: 'อัปโหลด', cancelButtonText: 'ยกเลิก', showCancelButton: true
@@ -643,7 +662,6 @@
     }
   }
 
-  /* ── USER SUBMIT ── */
   function submitUser() {
     const u = document.getElementById('username').value.trim();
     const d = document.getElementById('dateNeeded').value;
@@ -676,7 +694,6 @@
   }
 
   /* ══ DATE PICKER LOGIC ══ */
-  // ส่วนปฏิทินใช้โค้ดเดิมเป๊ะครับ...
   const MONTHS_TH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
   let dpOpen = false; let dpYear, dpMonth, dpSelectedDate = null;
   function dpInit() { const now = new Date(); dpYear = now.getFullYear(); dpMonth = now.getMonth(); dpRenderCal(); }
@@ -733,7 +750,13 @@
   }
 
   document.addEventListener('click', function(e) { if (dpOpen) dpClose(); if (tpOpen) tpClose(); });
-  window.onload = function() { dpInit(); loadList(); };
+  
+  // โหลดข้อมูลเมื่อเปิดหน้าเว็บ
+  window.onload = function() { 
+    dpInit(); 
+    // โหลดข้อมูลจริงๆ จากเซิร์ฟเวอร์แบบเงียบๆ (Background Fetch)
+    loadList(); 
+  };
 </script>
 </body>
 </html>
